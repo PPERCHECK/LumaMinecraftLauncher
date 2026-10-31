@@ -31,6 +31,9 @@ export function initStore() {
   data.settings = { ...defaults, ...data.settings };
   data.friends ||= [];
   data.billing = { ...billingDefaults, ...data.billing };
+  if (["https://github.com/sponsors/PPERCHECK", "https://boosty.to/luma_launcher"].includes(data.billing.paymentUrl)) data.billing.paymentUrl = billingDefaults.paymentUrl;
+  if (!data.billing.boostyUrl || data.billing.boostyUrl === "https://boosty.to/luma_launcher") data.billing.boostyUrl = billingDefaults.boostyUrl;
+  save();
 }
 export function db() {
   return data;
