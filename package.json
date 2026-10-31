@@ -1,0 +1,102 @@
+{
+  "name": "luma-launcher",
+  "version": "0.3.0",
+  "description": "Luma — Minecraft Java Edition launcher",
+  "author": "Luma contributors",
+  "license": "MIT",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "tsc --noEmit && node scripts/build.mjs && vite build",
+    "start": "electron .",
+    "pack": "npm run build && electron-builder --win dir --x64",
+    "test": "node scripts/test.mjs",
+    "check": "tsc --noEmit",
+    "test:smoke": "node scripts/smoke.mjs",
+    "setup": "npm run build && electron-builder --win nsis --x64 --publish never"
+  },
+  "dependencies": {
+    "@xmcl/core": "2.13.0",
+    "@xmcl/installer": "5.4.0",
+    "adm-zip": "0.6.1",
+    "electron-updater": "^6.8.11",
+    "fast-xml-parser": "^5.3.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "electron": "45.1.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0"
+  },
+  "build": {
+    "appId": "app.luma.launcher",
+    "productName": "Luma Launcher",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "signAndEditExecutable": true,
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "extraMetadata": {
+      "productName": "Luma Launcher"
+    },
+    "artifactName": "Luma-Setup-${version}.${ext}",
+    "publish": {
+      "provider": "github",
+      "owner": "PPERCHECK",
+      "repo": "LumaMinecraftLauncher",
+      "releaseType": "release"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Luma Launcher",
+      "deleteAppDataOnUninstall": false,
+      "installerLanguages": [
+        "ru_RU",
+        "en_US"
+      ],
+      "displayLanguageSelector": true,
+      "installerSidebar": "build/installer-sidebar.bmp",
+      "uninstallerSidebar": "build/installer-sidebar.bmp",
+      "installerHeader": "build/installer-header.bmp",
+      "include": "build/installer.nsh",
+      "runAfterFinish": true
+    }
+  },
+  "overrides": {
+    "undici": "6.29.1",
+    "@fastify/busboy": "3.2.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PPERCHECK/LumaMinecraftLauncher.git"
+  },
+  "homepage": "https://github.com/PPERCHECK/LumaMinecraftLauncher"
+}
