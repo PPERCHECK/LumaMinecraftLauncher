@@ -27,7 +27,15 @@ jobs:
         shell: pwsh
         run: ./scripts/installer-art.ps1
       - run: npm run build
+      - name: Create version tag for GitHub Release
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          git tag "v$version"
+          git push origin "v$version"
       - name: Build and publish installer, blockmap and latest.yml
         run: npx electron-builder --win nsis --x64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

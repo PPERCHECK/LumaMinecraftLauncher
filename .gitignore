@@ -7,3 +7,8 @@ release/
 vault.bin
 state.json
 playwright-report/
+build/icon.ico
+build/icon.png
+build/installer-header.bmp
+build/installer-sidebar.bmp
+
