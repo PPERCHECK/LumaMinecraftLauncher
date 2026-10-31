@@ -20,15 +20,17 @@ export const defaults: Settings = {
   elyClientId: "",
   elyRedirect: "http://localhost:38479/callback",
 };
+export const billingDefaults = { paymentUrl: "https://github.com/sponsors/PPERCHECK" };
 let data: Omit<State, "keys" | "dataPath" | "running">;
 export function initStore() {
   fs.mkdirSync(root(), { recursive: true });
   const f = path.join(root(), "state.json");
   data = fs.existsSync(f)
     ? JSON.parse(fs.readFileSync(f, "utf8"))
-    : { accounts: [], instances: [], servers: [], friends: [], settings: defaults };
+    : { accounts: [], instances: [], servers: [], friends: [], billing: billingDefaults, settings: defaults };
   data.settings = { ...defaults, ...data.settings };
   data.friends ||= [];
+  data.billing = { ...billingDefaults, ...data.billing };
 }
 export function db() {
   return data;

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { randomUUID } from "node:crypto";
+import { randomUUID, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import {
   db,
   initStore,
@@ -41,6 +41,7 @@ if (!process.env.LUMA_DATA)
 if (process.env.LUMA_DATA)
   app.setPath("userData", path.resolve(process.env.LUMA_DATA));
 let win: BrowserWindow;
+let adminSession = false;
 const emit = (event: string, data: any) => {
   if (win && !win.isDestroyed()) win.webContents.send("luma:" + event, data);
 };
@@ -61,6 +62,7 @@ function state() {
     },
     dataPath: root(),
     running: [...running.keys()],
+    premium: adminSession,
     systemMemory: Math.floor(os.totalmem() / 1024 ** 2),
   };
 }
@@ -92,6 +94,7 @@ function cleanSettings(input: any) {
           "cheats",
           "servers",
           "friends",
+          "billing",
           "downloads",
           "settings",
         ],
@@ -157,6 +160,34 @@ async function call(method: string, d: any = {}) {
   switch (method) {
     case "state":
       return state();
+    case "adminSetup": {
+      const existing = vault("admin");
+      if (existing) return { username: existing.username, password: null, created: false };
+      const username = "luma-owner";
+      const password = randomBytes(15).toString("base64url");
+      const salt = randomBytes(16).toString("hex");
+      vault("admin", { username, salt, hash: scryptSync(password, salt, 32).toString("hex") });
+      return { username, password, created: true };
+    }
+    case "adminLogin": {
+      const record = vault("admin");
+      if (!record || String(d.username) !== record.username) throw Error("Неверный администраторский логин или пароль");
+      const actual = scryptSync(String(d.password), record.salt, 32);
+      if (!timingSafeEqual(actual, Buffer.from(record.hash, "hex"))) throw Error("Неверный администраторский логин или пароль");
+      adminSession = true;
+      return { premium: true };
+    }
+    case "adminLogout":
+      adminSession = false;
+      return { premium: false };
+    case "setPaymentUrl": {
+      if (!adminSession) throw Error("Войдите как администратор");
+      const url = new URL(String(d));
+      if (url.protocol !== "https:") throw Error("Ссылка оплаты должна начинаться с https://");
+      db().billing.paymentUrl = url.href.slice(0, 1000);
+      save();
+      break;
+    }
     case "window":
       if (d === "minimize") win.minimize();
       else if (d === "maximize") {

@@ -595,6 +595,25 @@ img {
 .friend-card { display: flex; align-items: center; gap: 12px; min-height: 78px; padding: 13px; border: 1px solid var(--line); background: var(--panel); border-radius: 13px; }
 .friend-card > span { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 .friend-card small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 8px 0 22px; }
+.plan-card { min-height: 220px; padding: 23px; border: 1px solid var(--line); border-radius: 15px; background: var(--panel); display: flex; flex-direction: column; gap: 12px; }
+.plan-card.featured { border-color: var(--accent); box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 13%, transparent); }
+.plan-card strong { font-size: 28px; color: var(--accent); }
+.plan-card strong small { font-size: 13px; color: var(--muted); }
+.plan-card p { flex: 1; }
+.qr-card, .admin-card { display: flex; align-items: center; gap: 25px; padding: 22px; margin: 18px 0; border: 1px solid var(--line); border-radius: 15px; background: var(--panel); }
+.qr-card > div { flex: 1; }
+.qr-card img { width: 180px; height: 180px; border-radius: 10px; background: #fff; padding: 8px; }
+.qr-card a { display: block; margin-top: 12px; overflow-wrap: anywhere; }
+.admin-card { display: block; }
+.admin-heading { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 18px; }
+.admin-heading > svg { color: var(--accent); }
+.admin-login { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-top: 14px; }
+.admin-credentials { display: flex; flex-direction: column; gap: 5px; padding: 14px; margin: 13px 0; border: 1px solid #f1cb9166; border-radius: 10px; background: #f1cb9110; }
+.admin-credentials code { color: #f1cb91; font-size: 17px; }
+.admin-credentials small { color: var(--muted); }
+.admin-badge { display: inline-flex; gap: 8px; align-items: center; padding: 10px 13px; margin-bottom: 14px; color: #8fdbc7; border-radius: 9px; background: #8fdbc711; }
+.admin-card label { margin-top: 10px; }
 .hero > .landscape {
   position: absolute;
   inset: 0;

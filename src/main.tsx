@@ -47,6 +47,8 @@ import {
   FileText,
   RotateCcw,
   CheckCheck,
+  Gem,
+  LockKeyhole,
 } from "lucide-react";
 import type {
   State,
@@ -69,6 +71,7 @@ const nav = [
   ["cheats", ScanEye, "Читы", "Client mods"],
   ["servers", Server, "Серверы", "Servers"],
   ["friends", Users, "Друзья", "Friends"],
+  ["billing", Gem, "Luma Pro", "Luma Pro"],
   ["downloads", Download, "Загрузки", "Downloads"],
   ["settings", Settings2, "Настройки", "Settings"],
   ["horizon", CircleHelp, "Horizon", "Horizon"],
@@ -325,7 +328,7 @@ function App() {
           <div className="edition">
             <span className="status-dot" />
             <span>Minecraft Java Edition</span>
-            <small>v0.4.0</small>
+            <small>v0.5.0</small>
           </div>
           <button
             className="account-button"
@@ -404,6 +407,7 @@ function App() {
             )}
             {page === "servers" && <Servers {...ctx} />}
             {page === "friends" && <Friends {...ctx} />}
+            {page === "billing" && <Billing {...ctx} />}
             {page === "downloads" && <Downloads {...ctx} jobs={jobs} />}
             {page === "settings" && <SettingsView {...ctx} />}
             {page === "horizon" && <Horizon {...ctx} />}
@@ -415,7 +419,7 @@ function App() {
                 {tr("Твой мир начинается здесь.", "Your world starts here.")}
               </span>
               <span>
-                JAVA EDITION <span className="footer-dot">•</span> 0.4.0
+                JAVA EDITION <span className="footer-dot">•</span> 0.5.0
               </span>
             </footer>
           </div>
@@ -2500,6 +2504,19 @@ function Friends(c: Ctx) {
     <div className="friends-title"><h3>{c.tr("Мои друзья", "My friends")}</h3><button className="secondary" onClick={() => setAdding(!adding)}><Plus size={15}/>{c.tr("Добавить друга", "Add friend")}</button></div>
     {adding && <div className="settings-card"><div className="form-row"><label>{c.tr("Имя друга", "Friend name")}<input value={name} onChange={e => setName(e.target.value)} placeholder="Alex"/></label><label>{c.tr("Адрес в локальной сети", "Local network address")}<input value={address} onChange={e => setAddress(e.target.value)} placeholder="192.168.1.42:25565"/></label></div><button className="primary" disabled={!address} onClick={() => c.run(async () => { await raw("addFriend", { name, address }); setAdding(false); setName(""); setAddress(""); })}><Plus size={15}/>{c.tr("Добавить", "Add")}</button></div>}
     {c.s.friends.length ? <div className="friend-grid">{c.s.friends.map((friend: any) => <article className="friend-card" key={friend.id}><PlayerAvatar/><span><strong>{friend.name}</strong><small>{friend.address}</small></span><button className="primary" onClick={() => c.play(c.s.activeInstance, friend.address)}><Play size={15}/>{c.tr("Войти", "Join")}</button><button className="icon-button" onClick={() => c.run(() => raw("removeFriend", friend.id))}><Trash2 size={16}/></button></article>)}</div> : <Empty icon={Users} title={c.tr("Добавь первого друга", "Add your first friend")} description={c.tr("Сохрани его локальный адрес или найди открытый мир автоматически.", "Save their local address or discover an open world automatically.")}/>} 
+  </>;
+}
+function Billing(c: Ctx) {
+  const [credentials, setCredentials] = useState<any>(null), [username, setUsername] = useState(""), [password, setPassword] = useState(""), [paymentUrl, setPaymentUrl] = useState(c.s.billing?.paymentUrl || ""), [error, setError] = useState("");
+  const setup = async () => { try { setCredentials(await raw("adminSetup")); } catch (e) { setError((e as Error).message); } };
+  const login = async () => { try { await raw("adminLogin", { username, password }); await c.reload(); setPassword(""); } catch (e) { setError((e as Error).message); } };
+  const saveUrl = async () => { try { await raw("setPaymentUrl", paymentUrl); await c.reload(); } catch (e) { setError((e as Error).message); } };
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(c.s.billing?.paymentUrl || paymentUrl)}`;
+  return <>
+    <Heading eyebrow="LUMA PRO" title={c.tr("Больше мира. Меньше рутины.", "More world. Less setup.")} description={c.tr("Подписки помогают оплачивать сервера, резервные копии и развитие Luma.", "Subscriptions fund hosting, backups and continued Luma development.")} />
+    <div className="plan-grid"><article className="plan-card"><span className="eyebrow">FREE</span><h3>Starter</h3><strong>0 ₽</strong><p>{c.tr("Локальные сборки, моды, обычная LAN-игра и резервные копии.", "Local instances, mods, ordinary LAN play and local backups.")}</p></article><article className="plan-card featured"><span className="eyebrow">POPULAR</span><h3>Luma Connect</h3><strong>149 ₽<small>/мес.</small></strong><p>{c.tr("Интернет-подключения к миру, приглашения и до пяти друзей.", "Internet world connections, invites and up to five friends.")}</p><button className="primary" onClick={() => raw("openUrl", c.s.billing.paymentUrl)}><Gem size={16}/>{c.tr("Оплатить по ссылке", "Pay online")}</button></article><article className="plan-card"><span className="eyebrow">CLOUD</span><h3>Luma Cloud</h3><strong>249 ₽<small>/мес.</small></strong><p>{c.tr("Connect плюс облачные копии миров, история восстановления и синхронизация.", "Connect plus cloud worlds, restore history and sync.")}</p></article></div>
+    <div className="qr-card"><div><div className="eyebrow">QR CHECKOUT</div><h3>{c.tr("Оплата по QR-коду", "Pay with QR code")}</h3><p>{c.tr("Откройте камеру телефона и перейдите на страницу оплаты. Сейчас используется ссылка владельца Luma; её можно заменить в админ-панели.", "Scan with your phone camera to open checkout. The owner can replace this payment link in the admin panel.")}</p><a className="text-link" href={c.s.billing.paymentUrl}>{c.s.billing.paymentUrl}</a></div><img src={qr} alt="QR-код оплаты" /></div>
+    <div className="admin-card"><div className="admin-heading"><LockKeyhole size={20}/><div><h3>{c.tr("Панель администратора", "Admin panel")}</h3><p>{c.tr("Администратор получает все Pro-возможности бесплатно на этом компьютере.", "Admin access unlocks all Pro features for free on this computer.")}</p></div></div>{!c.s.premium ? <>{!credentials && <button className="secondary" onClick={setup}>{c.tr("Создать доступ администратора", "Create admin access")}</button>}{credentials?.created && <div className="admin-credentials"><strong>{credentials.username}</strong><code>{credentials.password}</code><small>{c.tr("Сохраните пароль: он показывается только один раз.", "Save this password: it is shown only once.")}</small></div>}<div className="admin-login"><input value={username} onChange={e => setUsername(e.target.value)} placeholder={c.tr("Ник администратора", "Admin nickname")}/><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={c.tr("Пароль", "Password")}/><button className="primary" disabled={!username || !password} onClick={login}><LockKeyhole size={15}/>{c.tr("Войти", "Sign in")}</button></div></> : <><div className="admin-badge"><Gem size={18}/>{c.tr("Pro-возможности активны бесплатно", "Pro features are free for admin")}</div><label>{c.tr("Ссылка оплаты для QR-кода", "Payment URL for QR code")}<input value={paymentUrl} onChange={e => setPaymentUrl(e.target.value)} /></label><button className="primary" onClick={saveUrl}>{c.tr("Сохранить ссылку", "Save payment link")}</button><button className="secondary" onClick={async () => { await raw("adminLogout"); await c.reload(); }}>{c.tr("Выйти", "Sign out")}</button></>}{error && <p className="error-text">{error}</p>}</div>
   </>;
 }
 function Servers(c: Ctx) {

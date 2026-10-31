@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import type { Job } from "../src/shared";
-export const UA = "LumaLauncher/0.4.0 (personal desktop Minecraft launcher)";
+export const UA = "LumaLauncher/0.5.0 (personal desktop Minecraft launcher)";
 export async function json(url: string, init: RequestInit = {}) {
   const r = await fetch(url, {
     ...init,

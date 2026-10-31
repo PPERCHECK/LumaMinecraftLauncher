@@ -55,6 +55,7 @@ export type Settings = {
 };
 export type Server = { id: string; name: string; address: string };
 export type Friend = { id: string; name: string; address: string };
+export type Billing = { paymentUrl: string };
 export type State = {
   accounts: Account[];
   activeAccount?: string;
@@ -62,6 +63,7 @@ export type State = {
   activeInstance?: string;
   servers: Server[];
   friends: Friend[];
+  billing: Billing;
   settings: Settings;
   keys: { curseforge: boolean; elySecret: boolean };
   dataPath: string;
