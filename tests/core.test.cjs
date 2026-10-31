@@ -17,7 +17,6 @@ const {
   varint,
   ping,
   downloadFiles,
-  parseLanAnnouncement,
   syncMinecraftLanguage,
 } = require("../.test/core.cjs");
 const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), "luma-test-"));
@@ -220,8 +219,4 @@ test("Minecraft language follows the launcher without replacing other options", 
   assert.match(options, /lang:uk_ua/);
   assert.match(options, /fov:0.5/);
   assert.equal((options.match(/^lang:/gm) || []).length, 1);
-});
-test("Minecraft LAN announcements expose a joinable local address", () => {
-  assert.deepEqual(parseLanAnnouncement("[MOTD]Alex's World[/MOTD][AD]51234[/AD]", "192.168.1.12"), { name: "Alex's World", address: "192.168.1.12:51234" });
-  assert.equal(parseLanAnnouncement("[MOTD]broken[/MOTD][AD]99999[/AD]", "192.168.1.12"), null);
 });

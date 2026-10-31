@@ -27,9 +27,11 @@ export function initStore() {
   const f = path.join(root(), "state.json");
   data = fs.existsSync(f)
     ? JSON.parse(fs.readFileSync(f, "utf8"))
-    : { accounts: [], instances: [], servers: [], friends: [], billing: billingDefaults, settings: defaults };
+    : { accounts: [], instances: [], servers: [], billing: billingDefaults, settings: defaults };
   data.settings = { ...defaults, ...data.settings };
-  data.friends ||= [];
+  for (const i of data.instances) { i.notes ||= ""; i.tags ||= []; i.favorite ||= false; }
+  data.recentInstances ||= [];
+  delete (data as any).friends;
   data.billing = { ...billingDefaults, ...data.billing };
   if (["https://github.com/sponsors/PPERCHECK", "https://boosty.to/luma_launcher"].includes(data.billing.paymentUrl)) data.billing.paymentUrl = billingDefaults.paymentUrl;
   if (!data.billing.boostyUrl || data.billing.boostyUrl === "https://boosty.to/luma_launcher") data.billing.boostyUrl = billingDefaults.boostyUrl;

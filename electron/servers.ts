@@ -1,6 +1,5 @@
 import net from "node:net";
 import dns from "node:dns/promises";
-import dgram from "node:dgram";
 export function varint(n: number) {
   const b = [];
   do {
@@ -116,29 +115,3 @@ export async function ping(address: string) {
   });
 }
 
-export function parseLanAnnouncement(text: string, host: string) {
-  const motd = text.match(/\[MOTD\]([\s\S]*?)\[\/MOTD\]/)?.[1]?.trim();
-  const port = Number(text.match(/\[AD\](\d{1,5})\[\/AD\]/)?.[1]);
-  if (!motd || port < 1 || port > 65535 || !net.isIP(host)) return null;
-  return { name: motd, address: `${host}:${port}` };
-}
-
-export function discoverLan(timeout = 1600) {
-  return new Promise<any[]>((resolve) => {
-    const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
-    const found = new Map<string, any>();
-    const finish = () => {
-      try { socket.close(); } catch {}
-      resolve([...found.values()]);
-    };
-    socket.on("message", (message, remote) => {
-      const game = parseLanAnnouncement(message.toString("utf8"), remote.address);
-      if (game) found.set(game.address, game);
-    });
-    socket.on("error", finish);
-    socket.bind(4445, () => {
-      try { socket.addMembership("224.0.2.60"); } catch { return finish(); }
-      setTimeout(finish, timeout);
-    });
-  });
-}

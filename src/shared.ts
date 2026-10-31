@@ -36,9 +36,12 @@ export type Instance = {
   created: string;
   mods: Mod[];
   description: string;
+  notes?: string;
+  tags?: string[];
+  favorite?: boolean;
 };
 export type Settings = {
-  language: "ru" | "en" | "uk" | "de" | "fr" | "es" | "pl" | "pt_br" | "zh_cn";
+  language: "ru" | "en" | "uk" | "de" | "fr" | "es" | "pl" | "pt_br" | "zh_cn" | "kk" | "be";
   theme: "dark" | "light";
   accent: string;
   motion: boolean;
@@ -55,15 +58,15 @@ export type Settings = {
   elyRedirect: string;
 };
 export type Server = { id: string; name: string; address: string };
-export type Friend = { id: string; name: string; address: string };
 export type Billing = { paymentUrl: string; boostyUrl?: string };
 export type State = {
   accounts: Account[];
   activeAccount?: string;
   instances: Instance[];
+  recentInstances?: string[];
+  favorites?: string[];
   activeInstance?: string;
   servers: Server[];
-  friends: Friend[];
   billing: Billing;
   settings: Settings;
   keys: { curseforge: boolean; elySecret: boolean };

@@ -70,7 +70,6 @@ const nav = [
   ["catalog", Compass, "Каталог", "Discover"],
   ["cheats", ScanEye, "Читы", "Client mods"],
   ["servers", Server, "Серверы", "Servers"],
-  ["friends", Users, "Друзья", "Friends"],
   ["billing", Gem, "Luma Pro", "Luma Pro"],
   ["downloads", Download, "Загрузки", "Downloads"],
   ["settings", Settings2, "Настройки", "Settings"],
@@ -143,6 +142,8 @@ const translations: Record<string, Record<string, string>> = {
   pl: { Home: "Główna", Instances: "Instancje", Discover: "Katalog", Servers: "Serwery", Friends: "Znajomi", Downloads: "Pobieranie", Settings: "Ustawienia", Play: "Graj", "Create instance": "Utwórz instancję", Language: "Język", "Play together.": "Grajcie razem." },
   pt_br: { Home: "Início", Instances: "Instâncias", Discover: "Catálogo", Servers: "Servidores", Friends: "Amigos", Downloads: "Downloads", Settings: "Configurações", Play: "Jogar", "Create instance": "Criar instância", Language: "Idioma", "Play together.": "Joguem juntos." },
   zh_cn: { Home: "主页", Instances: "游戏实例", Discover: "内容库", Servers: "服务器", Friends: "好友", Downloads: "下载", Settings: "设置", Play: "开始游戏", "Create instance": "创建实例", Language: "语言", "Play together.": "一起游玩。" },
+  kk: { Home: "Басты бет", Instances: "Жинақтарым", Discover: "Каталог", Servers: "Серверлер", Downloads: "Жүктеулер", Settings: "Баптаулар", Play: "Ойнау", "Create instance": "Жинақ жасау", Language: "Тіл" },
+  be: { Home: "Галоўная", Instances: "Мае зборкі", Discover: "Каталог", Servers: "Серверы", Downloads: "Спампоўкі", Settings: "Налады", Play: "Гуляць", "Create instance": "Стварыць зборку", Language: "Мова" },
 };
 function App() {
   const [s, setS] = useState<State | null>(null),
@@ -328,7 +329,7 @@ function App() {
           <div className="edition">
             <span className="status-dot" />
             <span>Minecraft Java Edition</span>
-            <small>v0.5.0</small>
+            <small>v1.0.0</small>
           </div>
           <button
             className="account-button"
@@ -406,7 +407,6 @@ function App() {
               <CatalogView key={page} {...ctx} cheats={page === "cheats"} />
             )}
             {page === "servers" && <Servers {...ctx} />}
-            {page === "friends" && <Friends {...ctx} />}
             {page === "billing" && <Billing {...ctx} />}
             {page === "downloads" && <Downloads {...ctx} jobs={jobs} />}
             {page === "settings" && <SettingsView {...ctx} />}
@@ -419,7 +419,7 @@ function App() {
                 {tr("Твой мир начинается здесь.", "Your world starts here.")}
               </span>
               <span>
-                JAVA EDITION <span className="footer-dot">•</span> 0.5.0
+                JAVA EDITION <span className="footer-dot">•</span> 1.0.0
               </span>
             </footer>
           </div>
@@ -939,6 +939,7 @@ function InstanceCard({ i, ...c }: Ctx) {
           <span>
             {i.mods.length} {c.tr("модов", "mods")}
           </span>
+          <button className="icon-button" aria-label="Toggle favorite" onClick={() => c.run(() => raw("toggleFavorite", i.id))}>{i.favorite ? "★" : "☆"}</button>
           <button
             className="icon-button"
             aria-label="Manage instance"
@@ -948,6 +949,7 @@ function InstanceCard({ i, ...c }: Ctx) {
           </button>
         </div>
         <div className="instance-card-actions">
+          <button className="secondary" title={c.tr("Копировать сборку", "Duplicate instance")} onClick={() => c.run(() => raw("duplicateInstance", i.id), c.tr("Копия сборки создана", "Instance duplicated"))}><Copy size={15}/></button>
           <button
             className="secondary"
             onClick={() => c.run(() => raw("selectInstance", i.id))}
@@ -974,7 +976,7 @@ function InstanceCard({ i, ...c }: Ctx) {
   );
 }
 function Instances(c: Ctx) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(""), [onlyFavorites, setOnlyFavorites] = useState(false);
   return (
     <>
       <Heading
@@ -1005,12 +1007,12 @@ function Instances(c: Ctx) {
           placeholder={c.tr("Найти свою сборку…", "Find your instance…")}
         />
       </div>
+      <button className={"secondary " + (onlyFavorites ? "chosen" : "")} onClick={() => setOnlyFavorites(!onlyFavorites)}>{onlyFavorites ? "★ " : "☆ "}{c.tr("Избранное", "Favorites")}</button>
       {c.s.instances.length ? (
         <div className="instance-grid">
           {c.s.instances
-            .filter((i: Instance) =>
-              i.name.toLowerCase().includes(q.toLowerCase()),
-            )
+            .filter((i: Instance) => i.name.toLowerCase().includes(q.toLowerCase()) && (!onlyFavorites || i.favorite))
+            .sort((a: Instance, b: Instance) => Number(!!b.favorite) - Number(!!a.favorite))
             .map((i: Instance) => (
               <InstanceCard key={i.id} i={i} {...c} />
             ))}
@@ -2024,6 +2026,8 @@ function InstancePanel(c: Ctx) {
               onChange={(e) => set("description", e.target.value)}
             />
           </label>
+          <label>{c.tr("Заметки", "Notes")}<textarea value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} placeholder={c.tr("Что это за сборка? На каком сервере играешь?", "What is this instance for?")}/></label>
+          <label>{c.tr("Теги через запятую", "Tags, separated by commas")}<input value={(form.tags || []).join(", ")} onChange={(e) => set("tags", e.target.value.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 12))} placeholder="выживание, техника"/></label>
           <label>
             {c.tr(
               "Java — пустое поле для автоматического подбора",
@@ -2477,35 +2481,6 @@ function InstancePanel(c: Ctx) {
     </>
   );
 }
-function Friends(c: Ctx) {
-  const [adding, setAdding] = useState(false), [name, setName] = useState(""),
-    [address, setAddress] = useState(""), [nearby, setNearby] = useState<any[]>([]),
-    [scanning, setScanning] = useState(false);
-  const scan = async () => {
-    setScanning(true);
-    try { setNearby(await raw("discoverLan")); }
-    catch (e) { c.notify((e as Error).message, true); }
-    finally { setScanning(false); }
-  };
-  useEffect(() => { void scan(); }, []);
-  const host = () => {
-    if (!c.s.activeInstance) return c.setModal("create");
-    c.run(() => raw("playLan", { id: c.s.activeInstance }), c.tr("Игра запустится с автоматически открытым LAN-миром", "The game will launch and automatically open the world to LAN"));
-  };
-  return <>
-    <Heading eyebrow="LUMA FRIENDS · LOCAL NETWORK" title={c.tr("Играй вместе.", "Play together.")} description={c.tr("Открывай одиночный мир для локальной сети и подключайся к друзьям одним нажатием.", "Open a singleplayer world to your local network and join friends in one click.")}>
-      <button className="secondary" disabled={scanning} onClick={scan}><RefreshCw size={16} className={scanning ? "spin" : ""}/>{c.tr("Найти в сети", "Scan LAN")}</button>
-      <button className="primary" onClick={host}><Users size={17}/>{c.tr("Открыть для сети", "Open to LAN")}</button>
-    </Heading>
-    <div className="info-box"><ShieldCheck size={19}/><span>{c.tr("Автоматическое открытие устанавливает Auto LAN из Modrinth и работает в совместимых сборках Fabric/Quilt. Друг должен быть в той же локальной сети.", "Automatic hosting installs Auto LAN from Modrinth and works with compatible Fabric/Quilt instances. Your friend must be on the same local network.")}</span></div>
-    <div className="friends-section"><h3>{c.tr("Открытые миры рядом", "Nearby LAN worlds")}</h3>
-      {nearby.length ? <div className="friend-grid">{nearby.map(game => <article className="friend-card" key={game.address}><div className="server-icon"><Globe2 size={23}/></div><span><strong>{game.name}</strong><small>{game.address}</small></span><button className="primary" onClick={() => c.play(c.s.activeInstance, game.address)}><Play size={15}/>{c.tr("Войти", "Join")}</button></article>)}</div> : <p>{scanning ? c.tr("Ищем миры Minecraft…", "Looking for Minecraft worlds…") : c.tr("Открытых LAN-миров пока не найдено.", "No open LAN worlds found yet.")}</p>}
-    </div>
-    <div className="friends-title"><h3>{c.tr("Мои друзья", "My friends")}</h3><button className="secondary" onClick={() => setAdding(!adding)}><Plus size={15}/>{c.tr("Добавить друга", "Add friend")}</button></div>
-    {adding && <div className="settings-card"><div className="form-row"><label>{c.tr("Имя друга", "Friend name")}<input value={name} onChange={e => setName(e.target.value)} placeholder="Alex"/></label><label>{c.tr("Адрес в локальной сети", "Local network address")}<input value={address} onChange={e => setAddress(e.target.value)} placeholder="192.168.1.42:25565"/></label></div><button className="primary" disabled={!address} onClick={() => c.run(async () => { await raw("addFriend", { name, address }); setAdding(false); setName(""); setAddress(""); })}><Plus size={15}/>{c.tr("Добавить", "Add")}</button></div>}
-    {c.s.friends.length ? <div className="friend-grid">{c.s.friends.map((friend: any) => <article className="friend-card" key={friend.id}><PlayerAvatar/><span><strong>{friend.name}</strong><small>{friend.address}</small></span><button className="primary" onClick={() => c.play(c.s.activeInstance, friend.address)}><Play size={15}/>{c.tr("Войти", "Join")}</button><button className="icon-button" onClick={() => c.run(() => raw("removeFriend", friend.id))}><Trash2 size={16}/></button></article>)}</div> : <Empty icon={Users} title={c.tr("Добавь первого друга", "Add your first friend")} description={c.tr("Сохрани его локальный адрес или найди открытый мир автоматически.", "Save their local address or discover an open world automatically.")}/>} 
-  </>;
-}
 function Billing(c: Ctx) {
   const [credentials, setCredentials] = useState<any>(null), [username, setUsername] = useState(""), [password, setPassword] = useState(""), [paymentUrl, setPaymentUrl] = useState(c.s.billing?.paymentUrl || ""), [error, setError] = useState("");
   const setup = async () => { try { setCredentials(await raw("adminSetup")); } catch (e) { setError((e as Error).message); } };
@@ -2514,7 +2489,7 @@ function Billing(c: Ctx) {
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(c.s.billing?.paymentUrl || paymentUrl)}`;
   return <>
     <Heading eyebrow="LUMA COMMUNITY" title={c.tr("Все функции бесплатны.", "Everything is free.")} description={c.tr("Поддержка Luma — добровольная. Никаких подписок и платных блокировок.", "Luma is free. Support is optional, with no subscriptions or paid locks.")} />
-    <div className="plan-grid"><article className="plan-card featured"><span className="eyebrow">FREE</span><h3>Luma Launcher</h3><strong>0 ₽</strong><p>{c.tr("Сборки, моды, LAN, друзья, Horizon и все обновления доступны бесплатно.", "Instances, mods, LAN, friends, Horizon and updates are free.")}</p></article><article className="boosty-card"><div className="boosty-logo">B</div><div><span className="eyebrow">BOOSTY · 150 ₽</span><h3>{c.tr("Поддержать разработку", "Support development")}</h3><p>{c.tr("Пожалуйста, поддержите разработку Luma — я старался сделать лаунчер удобным и бесплатным.", "Please support Luma development — I worked hard to keep the launcher useful and free.")}</p><ul><li>✓ {c.tr("золотой ник", "gold nickname")}</li><li>✓ {c.tr("значок supporter", "supporter badge")}</li><li>✓ {c.tr("уникальный смайл ✦", "unique ✦ smile")}</li></ul><button className="boosty-button" onClick={() => raw("openUrl", c.s.billing.boostyUrl || c.s.billing.paymentUrl)}><ExternalLink size={16}/>{c.tr("Перейти на Boosty", "Go to Boosty")}</button></div></article></div>
+    <div className="plan-grid"><article className="plan-card featured"><span className="eyebrow">FREE</span><h3>Luma Launcher</h3><strong>0 ₽</strong><p>{c.tr("Сборки, моды, серверы, Horizon и все обновления доступны бесплатно.", "Instances, mods, servers, Horizon and updates are free.")}</p></article><article className="boosty-card"><div className="boosty-logo">B</div><div><span className="eyebrow">BOOSTY · 150 ₽</span><h3>{c.tr("Поддержать разработку", "Support development")}</h3><p>{c.tr("Пожалуйста, поддержите разработку Luma — я старался сделать лаунчер удобным и бесплатным.", "Please support Luma development — I worked hard to keep the launcher useful and free.")}</p><ul><li>✓ {c.tr("золотой ник", "gold nickname")}</li><li>✓ {c.tr("значок supporter", "supporter badge")}</li><li>✓ {c.tr("уникальный смайл ✦", "unique ✦ smile")}</li></ul><button className="boosty-button" onClick={() => raw("openUrl", c.s.billing.boostyUrl || c.s.billing.paymentUrl)}><ExternalLink size={16}/>{c.tr("Перейти на Boosty", "Go to Boosty")}</button></div></article></div>
     <div className="admin-card"><div className="admin-heading"><LockKeyhole size={20}/><div><h3>{c.tr("Панель поддержки", "Supporter panel")}</h3><p>{c.tr("После проверки пожертвования можно вручную включить косметический supporter-значок для аккаунта.", "After checking a donation, manually enable the cosmetic supporter badge for an account.")}</p></div></div>{!c.s.premium ? <>{!credentials && <button className="secondary" onClick={setup}>{c.tr("Создать доступ администратора", "Create admin access")}</button>}{credentials?.created && <div className="admin-credentials"><strong>{credentials.username}</strong><code>{credentials.password}</code><small>{c.tr("Сохраните пароль: он показывается только один раз.", "Save this password: it is shown only once.")}</small></div>}<div className="admin-login"><input value={username} onChange={e => setUsername(e.target.value)} placeholder={c.tr("Ник администратора", "Admin nickname")}/><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={c.tr("Пароль", "Password")}/><button className="primary" disabled={!username || !password} onClick={login}><LockKeyhole size={15}/>{c.tr("Войти", "Sign in")}</button></div></> : <><div className="admin-badge"><Gem size={18}/>{c.tr("Все функции бесплатны", "All features are free")}</div>{c.s.accounts.map((a: any) => <div className="admin-account-row" key={a.id}><span className={a.supporter ? "supporter-name" : ""}>{a.name}{a.supporter ? " ✦" : ""}</span><button className="secondary" onClick={() => c.run(() => raw("setSupporter", { accountId: a.id, enabled: !a.supporter }))}>{a.supporter ? c.tr("Снять значок", "Remove badge") : c.tr("Подтвердить поддержку", "Mark supporter")}</button></div>)}<button className="secondary" onClick={async () => { await raw("adminLogout"); await c.reload(); }}>{c.tr("Выйти", "Sign out")}</button></>}{error && <p className="error-text">{error}</p>}</div>
   </>;
 }
@@ -2547,8 +2522,8 @@ function Servers(c: Ctx) {
         eyebrow="MULTIPLAYER"
         title={c.tr("Вместе интереснее.", "Better together.")}
         description={c.tr(
-          "Твои любимые серверы. Один клик до встречи.",
-          "Your favorite servers. One click from your friends.",
+          "Сохрани адреса серверов и подключайся в один клик.",
+          "Save server addresses and join with one click.",
         )}
       >
         <button className="secondary" disabled={busy} onClick={check}>
@@ -2663,7 +2638,7 @@ function Servers(c: Ctx) {
       ) : (
         <Empty
           icon={Server}
-          title={c.tr("Твои друзья где-то здесь", "Your friends are out there")}
+          title={c.tr("Список пока пуст", "Your list is empty")}
           description={c.tr(
             "Добавь адрес сервера, чтобы видеть его статус и быстро подключаться.",
             "Add a server address to see its status and join quickly.",
@@ -3088,6 +3063,8 @@ function SettingsView(c: Ctx) {
                   <option value="pl">Polski</option>
                   <option value="pt_br">Português (Brasil)</option>
                   <option value="zh_cn">简体中文</option>
+                  <option value="kk">Қазақша</option>
+                  <option value="be">Беларуская</option>
                 </select>
               </label>
               <label>
