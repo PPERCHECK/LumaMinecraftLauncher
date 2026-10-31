@@ -32,8 +32,10 @@ jobs:
         shell: pwsh
         run: |
           $version = node -p "require('./package.json').version"
-          git tag "v$version"
-          git push origin "v$version"
+          if (-not (git ls-remote --tags origin "refs/tags/v$version")) {
+            git tag "v$version"
+            git push origin "v$version"
+          }
       - name: Build and publish installer, blockmap and latest.yml
         run: npx electron-builder --win nsis --x64 --publish always
         env:
