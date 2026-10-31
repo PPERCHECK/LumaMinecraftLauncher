@@ -188,6 +188,14 @@ async function call(method: string, d: any = {}) {
       save();
       break;
     }
+    case "setSupporter": {
+      if (!adminSession) throw Error("Войдите как администратор");
+      const account = db().accounts.find((a) => a.id === String(d?.accountId));
+      if (!account) throw Error("Аккаунт не найден");
+      account.supporter = Boolean(d?.enabled);
+      save();
+      return { supporter: account.supporter };
+    }
     case "window":
       if (d === "minimize") win.minimize();
       else if (d === "maximize") {

@@ -614,6 +614,13 @@ img {
 .admin-credentials small { color: var(--muted); }
 .admin-badge { display: inline-flex; gap: 8px; align-items: center; padding: 10px 13px; margin-bottom: 14px; color: #8fdbc7; border-radius: 9px; background: #8fdbc711; }
 .admin-card label { margin-top: 10px; }
+.supporter-name { color: #f6c85f; text-shadow: 0 0 10px #f6c85f55; }
+.admin-account-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.boosty-card { display: flex; align-items: flex-start; gap: 18px; padding: 24px; border: 1px solid #f05a7244; border-radius: 16px; background: linear-gradient(135deg, #f05a7218, var(--panel)); }
+.boosty-logo { display: grid; place-items: center; flex: 0 0 54px; width: 54px; height: 54px; color: #fff; font-size: 31px; font-weight: 900; border-radius: 14px; background: #f05a72; box-shadow: 0 8px 26px #f05a7244; }
+.boosty-card ul { display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 0; margin: 12px 0 18px; color: var(--muted); list-style: none; }
+.boosty-button { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; color: white; font-weight: 700; border: 0; border-radius: 10px; background: #f05a72; cursor: pointer; }
+.boosty-button:hover { background: #ff6f84; }
 .hero > .landscape {
   position: absolute;
   inset: 0;

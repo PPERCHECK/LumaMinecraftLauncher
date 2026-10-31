@@ -4,6 +4,7 @@ export type Account = {
   name: string;
   type: "local" | "microsoft" | "ely";
   skin?: string;
+  supporter?: boolean;
 };
 export type Mod = {
   file: string;
@@ -55,7 +56,7 @@ export type Settings = {
 };
 export type Server = { id: string; name: string; address: string };
 export type Friend = { id: string; name: string; address: string };
-export type Billing = { paymentUrl: string };
+export type Billing = { paymentUrl: string; boostyUrl?: string };
 export type State = {
   accounts: Account[];
   activeAccount?: string;

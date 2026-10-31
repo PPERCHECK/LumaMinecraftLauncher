@@ -20,7 +20,7 @@ export const defaults: Settings = {
   elyClientId: "",
   elyRedirect: "http://localhost:38479/callback",
 };
-export const billingDefaults = { paymentUrl: "https://github.com/sponsors/PPERCHECK" };
+export const billingDefaults = { paymentUrl: "https://boosty.to/v4ytopi228", boostyUrl: "https://boosty.to/v4ytopi228" };
 let data: Omit<State, "keys" | "dataPath" | "running">;
 export function initStore() {
   fs.mkdirSync(root(), { recursive: true });
