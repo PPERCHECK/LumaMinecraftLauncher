@@ -148,4 +148,3 @@ cache/                  скачанные архивы Java и модпаков
 Визуальный референс — [tiktokyou.ru](https://tiktokyou.ru/): тёмный фон, сиреневые акценты и мягкое свечение. Название, логотип, макет и векторные иллюстрации Luma созданы для этого проекта.
 
 Лицензия кода Luma — MIT. Minecraft, Java, моды и загрузчики загружаются из внешних источников и сохраняют лицензии своих правообладателей. Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
-

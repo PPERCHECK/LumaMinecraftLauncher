@@ -225,4 +225,3 @@ test("Minecraft LAN announcements expose a joinable local address", () => {
   assert.deepEqual(parseLanAnnouncement("[MOTD]Alex's World[/MOTD][AD]51234[/AD]", "192.168.1.12"), { name: "Alex's World", address: "192.168.1.12:51234" });
   assert.equal(parseLanAnnouncement("[MOTD]broken[/MOTD][AD]99999[/AD]", "192.168.1.12"), null);
 });
-

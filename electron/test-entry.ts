@@ -7,4 +7,3 @@ export { parseLanAnnouncement } from "./servers";
 export { syncMinecraftLanguage, minecraftLanguages } from "./minecraft";
 export { downloadFiles } from "./game-files";
 export { UpdateController } from "./update-controller";
-

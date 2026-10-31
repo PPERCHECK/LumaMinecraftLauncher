@@ -102,4 +102,3 @@ export function redact(line: string) {
     "$1[REDACTED]",
   );
 }
-

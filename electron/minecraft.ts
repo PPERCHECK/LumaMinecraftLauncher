@@ -394,4 +394,3 @@ export function syncMinecraftLanguage(dir: string, language: string) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(file, lines.filter((line, n) => line || n < lines.length - 1).join("\n") + "\n");
 }
-

@@ -142,4 +142,3 @@ export function discoverLan(timeout = 1600) {
     });
   });
 }
-
