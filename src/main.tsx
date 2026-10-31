@@ -68,6 +68,7 @@ const nav = [
   ["catalog", Compass, "Каталог", "Discover"],
   ["cheats", ScanEye, "Читы", "Client mods"],
   ["servers", Server, "Серверы", "Servers"],
+  ["friends", Users, "Друзья", "Friends"],
   ["downloads", Download, "Загрузки", "Downloads"],
   ["settings", Settings2, "Настройки", "Settings"],
   ["horizon", CircleHelp, "Horizon", "Horizon"],
@@ -131,6 +132,15 @@ const texts: Record<string, [string, string]> = {
   manage: ["Управление", "Manage"],
   delete: ["Удалить", "Delete"],
 };
+const translations: Record<string, Record<string, string>> = {
+  uk: { Home: "Головна", Instances: "Мої збірки", Discover: "Каталог", Servers: "Сервери", Friends: "Друзі", Downloads: "Завантаження", Settings: "Налаштування", Play: "Грати", "Create instance": "Створити збірку", Language: "Мова", "Play together.": "Грайте разом." },
+  de: { Home: "Start", Instances: "Instanzen", Discover: "Katalog", Servers: "Server", Friends: "Freunde", Downloads: "Downloads", Settings: "Einstellungen", Play: "Spielen", "Create instance": "Instanz erstellen", Language: "Sprache", "Play together.": "Gemeinsam spielen." },
+  fr: { Home: "Accueil", Instances: "Instances", Discover: "Catalogue", Servers: "Serveurs", Friends: "Amis", Downloads: "Téléchargements", Settings: "Paramètres", Play: "Jouer", "Create instance": "Créer une instance", Language: "Langue", "Play together.": "Jouez ensemble." },
+  es: { Home: "Inicio", Instances: "Instancias", Discover: "Catálogo", Servers: "Servidores", Friends: "Amigos", Downloads: "Descargas", Settings: "Ajustes", Play: "Jugar", "Create instance": "Crear instancia", Language: "Idioma", "Play together.": "Juega en compañía." },
+  pl: { Home: "Główna", Instances: "Instancje", Discover: "Katalog", Servers: "Serwery", Friends: "Znajomi", Downloads: "Pobieranie", Settings: "Ustawienia", Play: "Graj", "Create instance": "Utwórz instancję", Language: "Język", "Play together.": "Grajcie razem." },
+  pt_br: { Home: "Início", Instances: "Instâncias", Discover: "Catálogo", Servers: "Servidores", Friends: "Amigos", Downloads: "Downloads", Settings: "Configurações", Play: "Jogar", "Create instance": "Criar instância", Language: "Idioma", "Play together.": "Joguem juntos." },
+  zh_cn: { Home: "主页", Instances: "游戏实例", Discover: "内容库", Servers: "服务器", Friends: "好友", Downloads: "下载", Settings: "设置", Play: "开始游戏", "Create instance": "创建实例", Language: "语言", "Play together.": "一起游玩。" },
+};
 function App() {
   const [s, setS] = useState<State | null>(null),
     [page, setPage] = useState("home"),
@@ -143,9 +153,11 @@ function App() {
     [auth, setAuth] = useState<any>(null),
     [fatal, setFatal] = useState("");
   const first = useRef(true);
-  const en = s?.settings.language === "en";
-  const t = (k: string) => texts[k]?.[en ? 1 : 0] || k;
-  const tr = (ru: string, eng: string) => (en ? eng : ru);
+  const language = s?.settings.language || "ru";
+  const en = language !== "ru";
+  const localize = (eng: string) => translations[language]?.[eng] || eng;
+  const t = (k: string) => en ? localize(texts[k]?.[1] || k) : texts[k]?.[0] || k;
+  const tr = (ru: string, eng: string) => (en ? localize(eng) : ru);
   const notify = (text: string, error = false) => {
     setToast({ text, error });
   };
@@ -292,14 +304,14 @@ function App() {
         <nav>
           {nav.map(([id, Icon, ru, eng], n) => (
             <React.Fragment key={id}>
-              {(n === 5 || id === "horizon") && <div className="nav-separator" />}
+              {(id === "downloads" || id === "horizon") && <div className="nav-separator" />}
               <button
                 className={"nav-item " + (page === id ? "active" : "")}
                 onClick={() => setPage(id)}
                 title={en ? eng : ru}
               >
                 <Icon size={19} />
-                <span>{en ? eng : ru}</span>
+                <span>{en ? localize(eng) : ru}</span>
                 {id === "downloads" && activeJobs.length > 0 && (
                   <b className="nav-count">{activeJobs.length}</b>
                 )}
@@ -313,7 +325,7 @@ function App() {
           <div className="edition">
             <span className="status-dot" />
             <span>Minecraft Java Edition</span>
-            <small>v0.3.0</small>
+            <small>v0.4.0</small>
           </div>
           <button
             className="account-button"
@@ -342,21 +354,15 @@ function App() {
         <header className="topbar">
           <div className="breadcrumb">
             Luma <ChevronRight size={13} />
-            <strong>{nav.find((x) => x[0] === page)?.[en ? 3 : 2]}</strong>
+            <strong>{en ? localize(String(nav.find((x) => x[0] === page)?.[3] || "")) : nav.find((x) => x[0] === page)?.[2]}</strong>
           </div>
           <div className="top-actions">
             <button
               className="key-button"
-              onClick={() => {
-                setS({
-                  ...s,
-                  settings: { ...s.settings, language: en ? "ru" : "en" },
-                });
-                void run(() => raw("settings", { language: en ? "ru" : "en" }));
-              }}
+              onClick={() => setPage("settings")}
             >
               <Globe2 size={14} />
-              {en ? "EN" : "RU"}
+              {language.replace("_", "-").toUpperCase()}
             </button>
             <span className="top-divider" />
             <button
@@ -397,6 +403,7 @@ function App() {
               <CatalogView key={page} {...ctx} cheats={page === "cheats"} />
             )}
             {page === "servers" && <Servers {...ctx} />}
+            {page === "friends" && <Friends {...ctx} />}
             {page === "downloads" && <Downloads {...ctx} jobs={jobs} />}
             {page === "settings" && <SettingsView {...ctx} />}
             {page === "horizon" && <Horizon {...ctx} />}
@@ -408,7 +415,7 @@ function App() {
                 {tr("Твой мир начинается здесь.", "Your world starts here.")}
               </span>
               <span>
-                JAVA EDITION <span className="footer-dot">•</span> 0.3.0
+                JAVA EDITION <span className="footer-dot">•</span> 0.4.0
               </span>
             </footer>
           </div>
@@ -2466,6 +2473,35 @@ function InstancePanel(c: Ctx) {
     </>
   );
 }
+function Friends(c: Ctx) {
+  const [adding, setAdding] = useState(false), [name, setName] = useState(""),
+    [address, setAddress] = useState(""), [nearby, setNearby] = useState<any[]>([]),
+    [scanning, setScanning] = useState(false);
+  const scan = async () => {
+    setScanning(true);
+    try { setNearby(await raw("discoverLan")); }
+    catch (e) { c.notify((e as Error).message, true); }
+    finally { setScanning(false); }
+  };
+  useEffect(() => { void scan(); }, []);
+  const host = () => {
+    if (!c.s.activeInstance) return c.setModal("create");
+    c.run(() => raw("playLan", { id: c.s.activeInstance }), c.tr("Игра запустится с автоматически открытым LAN-миром", "The game will launch and automatically open the world to LAN"));
+  };
+  return <>
+    <Heading eyebrow="LUMA FRIENDS · LOCAL NETWORK" title={c.tr("Играй вместе.", "Play together.")} description={c.tr("Открывай одиночный мир для локальной сети и подключайся к друзьям одним нажатием.", "Open a singleplayer world to your local network and join friends in one click.")}>
+      <button className="secondary" disabled={scanning} onClick={scan}><RefreshCw size={16} className={scanning ? "spin" : ""}/>{c.tr("Найти в сети", "Scan LAN")}</button>
+      <button className="primary" onClick={host}><Users size={17}/>{c.tr("Открыть для сети", "Open to LAN")}</button>
+    </Heading>
+    <div className="info-box"><ShieldCheck size={19}/><span>{c.tr("Автоматическое открытие устанавливает Auto LAN из Modrinth и работает в совместимых сборках Fabric/Quilt. Друг должен быть в той же локальной сети.", "Automatic hosting installs Auto LAN from Modrinth and works with compatible Fabric/Quilt instances. Your friend must be on the same local network.")}</span></div>
+    <div className="friends-section"><h3>{c.tr("Открытые миры рядом", "Nearby LAN worlds")}</h3>
+      {nearby.length ? <div className="friend-grid">{nearby.map(game => <article className="friend-card" key={game.address}><div className="server-icon"><Globe2 size={23}/></div><span><strong>{game.name}</strong><small>{game.address}</small></span><button className="primary" onClick={() => c.play(c.s.activeInstance, game.address)}><Play size={15}/>{c.tr("Войти", "Join")}</button></article>)}</div> : <p>{scanning ? c.tr("Ищем миры Minecraft…", "Looking for Minecraft worlds…") : c.tr("Открытых LAN-миров пока не найдено.", "No open LAN worlds found yet.")}</p>}
+    </div>
+    <div className="friends-title"><h3>{c.tr("Мои друзья", "My friends")}</h3><button className="secondary" onClick={() => setAdding(!adding)}><Plus size={15}/>{c.tr("Добавить друга", "Add friend")}</button></div>
+    {adding && <div className="settings-card"><div className="form-row"><label>{c.tr("Имя друга", "Friend name")}<input value={name} onChange={e => setName(e.target.value)} placeholder="Alex"/></label><label>{c.tr("Адрес в локальной сети", "Local network address")}<input value={address} onChange={e => setAddress(e.target.value)} placeholder="192.168.1.42:25565"/></label></div><button className="primary" disabled={!address} onClick={() => c.run(async () => { await raw("addFriend", { name, address }); setAdding(false); setName(""); setAddress(""); })}><Plus size={15}/>{c.tr("Добавить", "Add")}</button></div>}
+    {c.s.friends.length ? <div className="friend-grid">{c.s.friends.map((friend: any) => <article className="friend-card" key={friend.id}><PlayerAvatar/><span><strong>{friend.name}</strong><small>{friend.address}</small></span><button className="primary" onClick={() => c.play(c.s.activeInstance, friend.address)}><Play size={15}/>{c.tr("Войти", "Join")}</button><button className="icon-button" onClick={() => c.run(() => raw("removeFriend", friend.id))}><Trash2 size={16}/></button></article>)}</div> : <Empty icon={Users} title={c.tr("Добавь первого друга", "Add your first friend")} description={c.tr("Сохрани его локальный адрес или найди открытый мир автоматически.", "Save their local address or discover an open world automatically.")}/>} 
+  </>;
+}
 function Servers(c: Ctx) {
   const [adding, setAdding] = useState(false),
     [name, setName] = useState(""),
@@ -3029,6 +3065,13 @@ function SettingsView(c: Ctx) {
                 >
                   <option value="ru">Русский</option>
                   <option value="en">English</option>
+                  <option value="uk">Українська</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                  <option value="es">Español</option>
+                  <option value="pl">Polski</option>
+                  <option value="pt_br">Português (Brasil)</option>
+                  <option value="zh_cn">简体中文</option>
                 </select>
               </label>
               <label>
@@ -3379,3 +3422,4 @@ function Toggle({ label, description, value, onChange }: any) {
   );
 }
 createRoot(document.getElementById("root")!).render(<App />);
+

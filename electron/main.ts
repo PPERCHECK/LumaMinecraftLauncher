@@ -26,7 +26,7 @@ import {
 } from "./minecraft";
 import * as Catalog from "./catalog";
 import * as Packs from "./packs";
-import { ping, parseAddress } from "./servers";
+import { ping, parseAddress, discoverLan } from "./servers";
 import type { Settings } from "../src/shared";
 import {
   initUpdates,
@@ -82,7 +82,7 @@ function cleanSettings(input: any) {
   for (const key of ["language", "theme", "density", "startPage"] as const)
     if (input[key] !== undefined) {
       const values: Record<string, string[]> = {
-        language: ["ru", "en"],
+        language: ["ru", "en", "uk", "de", "fr", "es", "pl", "pt_br", "zh_cn"],
         theme: ["dark", "light"],
         density: ["comfortable", "compact"],
         startPage: [
@@ -91,6 +91,7 @@ function cleanSettings(input: any) {
           "catalog",
           "cheats",
           "servers",
+          "friends",
           "downloads",
           "settings",
         ],
@@ -273,6 +274,22 @@ async function call(method: string, d: any = {}) {
             ? launchGame(id, ctx, emit, d.server)
             : installGame(id, ctx).then(() => {}),
       );
+    }
+    case "playLan": {
+      const id = String(d.id);
+      const i = instance(id);
+      if (!["fabric", "quilt"].includes(i.loader))
+        throw Error("Automatic LAN requires a Fabric or Quilt instance");
+      if (queue.has(id) || running.has(id)) throw Error("This instance is busy");
+      return queue.add("LAN · " + i.name, id, async (ctx) => {
+        if (!i.mods.some((m) => m.source === "modrinth" && m.projectId === "MpJfqdMf" && m.enabled)) {
+          const versions = await Catalog.projectVersions("modrinth", "MpJfqdMf", i.version, i.loader);
+          if (!versions[0]) throw Error("Auto LAN does not support this Minecraft version yet");
+          Packs.backup(id, "before-auto-lan");
+          await Catalog.installProject({ id: "MpJfqdMf", source: "modrinth", title: "Auto LAN", description: "Automatically opens singleplayer worlds to LAN", downloads: 0, author: "Modrinth", type: "mod", url: "https://modrinth.com/project/MpJfqdMf" }, versions[0].id, id, ctx);
+        }
+        await launchGame(id, ctx, emit);
+      });
     }
     case "stop":
       running.get(d)?.kill();
@@ -489,6 +506,17 @@ async function call(method: string, d: any = {}) {
       });
       save();
       break;
+    case "discoverLan":
+      return discoverLan();
+    case "addFriend":
+      parseAddress(d.address);
+      db().friends.push({ id: randomUUID(), name: String(d.name || d.address).trim().slice(0, 100), address: String(d.address) });
+      save();
+      break;
+    case "removeFriend":
+      db().friends = db().friends.filter((x) => x.id !== d);
+      save();
+      break;
     case "removeServer":
       db().servers = db().servers.filter((x) => x.id !== d);
       save();
@@ -700,3 +728,4 @@ else {
   });
   app.on("window-all-closed", () => app.quit());
 }
+

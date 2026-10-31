@@ -26,8 +26,9 @@ export function initStore() {
   const f = path.join(root(), "state.json");
   data = fs.existsSync(f)
     ? JSON.parse(fs.readFileSync(f, "utf8"))
-    : { accounts: [], instances: [], servers: [], settings: defaults };
+    : { accounts: [], instances: [], servers: [], friends: [], settings: defaults };
   data.settings = { ...defaults, ...data.settings };
+  data.friends ||= [];
 }
 export function db() {
   return data;
@@ -101,3 +102,4 @@ export function redact(line: string) {
     "$1[REDACTED]",
   );
 }
+

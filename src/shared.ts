@@ -37,7 +37,7 @@ export type Instance = {
   description: string;
 };
 export type Settings = {
-  language: "ru" | "en";
+  language: "ru" | "en" | "uk" | "de" | "fr" | "es" | "pl" | "pt_br" | "zh_cn";
   theme: "dark" | "light";
   accent: string;
   motion: boolean;
@@ -54,12 +54,14 @@ export type Settings = {
   elyRedirect: string;
 };
 export type Server = { id: string; name: string; address: string };
+export type Friend = { id: string; name: string; address: string };
 export type State = {
   accounts: Account[];
   activeAccount?: string;
   instances: Instance[];
   activeInstance?: string;
   servers: Server[];
+  friends: Friend[];
   settings: Settings;
   keys: { curseforge: boolean; elySecret: boolean };
   dataPath: string;
@@ -106,3 +108,4 @@ declare global {
     luma: API;
   }
 }
+

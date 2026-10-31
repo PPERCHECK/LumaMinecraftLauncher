@@ -1,6 +1,6 @@
 {
   "name": "luma-launcher",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Luma — Minecraft Java Edition launcher",
   "author": "Luma contributors",
   "license": "MIT",
@@ -100,3 +100,4 @@
   },
   "homepage": "https://github.com/PPERCHECK/LumaMinecraftLauncher"
 }
+

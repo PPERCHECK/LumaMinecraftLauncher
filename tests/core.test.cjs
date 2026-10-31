@@ -17,6 +17,8 @@ const {
   varint,
   ping,
   downloadFiles,
+  parseLanAnnouncement,
+  syncMinecraftLanguage,
 } = require("../.test/core.cjs");
 const temp = () => fs.mkdtempSync(path.join(os.tmpdir(), "luma-test-"));
 test("Asset downloads recover from a transient connection reset with a verified retry", async () => {
@@ -210,3 +212,17 @@ test("Minecraft status ping handles fragmented packets from a real TCP server", 
     await new Promise((r) => server.close(r));
   }
 });
+test("Minecraft language follows the launcher without replacing other options", () => {
+  const dir = temp();
+  fs.writeFileSync(path.join(dir, "options.txt"), "fov:0.5\nlang:en_us\nmusic:0.2\n");
+  syncMinecraftLanguage(dir, "uk");
+  const options = fs.readFileSync(path.join(dir, "options.txt"), "utf8");
+  assert.match(options, /lang:uk_ua/);
+  assert.match(options, /fov:0.5/);
+  assert.equal((options.match(/^lang:/gm) || []).length, 1);
+});
+test("Minecraft LAN announcements expose a joinable local address", () => {
+  assert.deepEqual(parseLanAnnouncement("[MOTD]Alex's World[/MOTD][AD]51234[/AD]", "192.168.1.12"), { name: "Alex's World", address: "192.168.1.12:51234" });
+  assert.equal(parseLanAnnouncement("[MOTD]broken[/MOTD][AD]99999[/AD]", "192.168.1.12"), null);
+});
+

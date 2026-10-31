@@ -588,6 +588,13 @@ img {
 .bedrock-prompt { display: flex; align-items: center; gap: 12px; padding: 13px 17px; margin-bottom: 18px; border: 1px solid var(--line); background: var(--panel); border-radius: 12px; }
 .bedrock-prompt span { display: flex; flex-direction: column; gap: 3px; flex: 1; }
 .bedrock-prompt small { color: var(--muted); }
+.friends-section { margin: 22px 0 30px; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.friends-section h3 { margin-bottom: 14px; }
+.friends-title { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 14px; }
+.friend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 12px; }
+.friend-card { display: flex; align-items: center; gap: 12px; min-height: 78px; padding: 13px; border: 1px solid var(--line); background: var(--panel); border-radius: 13px; }
+.friend-card > span { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.friend-card small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
 .hero > .landscape {
   position: absolute;
   inset: 0;
@@ -2552,3 +2559,4 @@ input[type="range"] {
   font-size: 10px;
   margin-top: 4px;
 }
+

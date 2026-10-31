@@ -324,6 +324,7 @@ export async function launchGame(
     agent = { jar, server: "https://authserver.ely.by" };
   }
   const dir = instanceDir(id);
+  syncMinecraftLanguage(dir, db().settings.language);
   fs.mkdirSync(path.join(dir, "logs"), { recursive: true });
   const logfile = path.join(dir, "logs", "luma-console.log");
   fs.writeFileSync(logfile, "");
@@ -378,3 +379,19 @@ export async function launchGame(
     emit("refresh", null);
   });
 }
+
+export const minecraftLanguages: Record<string, string> = {
+  ru: "ru_ru", en: "en_us", uk: "uk_ua", de: "de_de", fr: "fr_fr",
+  es: "es_es", pl: "pl_pl", pt_br: "pt_br", zh_cn: "zh_cn",
+};
+export function syncMinecraftLanguage(dir: string, language: string) {
+  const file = path.join(dir, "options.txt");
+  const lang = minecraftLanguages[language] || "en_us";
+  const lines = fs.existsSync(file) ? fs.readFileSync(file, "utf8").split(/\r?\n/) : [];
+  const index = lines.findIndex((line) => line.startsWith("lang:"));
+  if (index < 0) lines.push("lang:" + lang);
+  else lines[index] = "lang:" + lang;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(file, lines.filter((line, n) => line || n < lines.length - 1).join("\n") + "\n");
+}
+
